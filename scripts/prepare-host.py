@@ -23,6 +23,11 @@ ORIGIN = "https://my-mediabank.kenigevents.ru"
 
 
 def run(args, **kwargs):
+    if args[:2] == ["systemctl", "--user"]:
+        runtime = f"/run/user/{os.getuid()}"
+        env = dict(os.environ)
+        env.update(XDG_RUNTIME_DIR=runtime, DBUS_SESSION_BUS_ADDRESS=f"unix:path={runtime}/bus")
+        kwargs["env"] = env
     return subprocess.run(args, check=True, timeout=60, capture_output=True, text=True, **kwargs)
 
 
