@@ -87,18 +87,26 @@ def publish(expected_sha, source_sha):
     if len(addresses) != 1:
         raise RuntimeError("Existing edge has ambiguous IPv4 target")
     address = addresses.pop()
-    zones = json.loads(run([YC, "dns", "zone", "list", "--format", "json", "--no-user-output"]).stdout)
-    matches = [zone for zone in zones if zone.get("zone") == "kenigevents.ru."]
-    if len(matches) != 1:
-        raise RuntimeError("Canonical DNS zone is ambiguous")
-    zone_id = matches[0]["id"]
-    records = json.loads(run([YC, "dns", "zone", "list-records", "--id", zone_id, "--format", "json", "--no-user-output"]).stdout)
-    records = records.get("record_sets", []) if isinstance(records, dict) else records
-    existing = [record for record in records if record.get("name") == HOST + "."]
-    if existing and not all(record.get("type") == "A" and set(record.get("data", [])) == {address} for record in existing):
-        raise RuntimeError("Conflicting DNS record; no update performed")
-    if not existing:
-        run([YC, "dns", "zone", "add-records", "--id", zone_id, "--record", f"{HOST}. 300 A {address}", "--no-user-output"])
+    try:
+        dns_ready = {item[4][0] for item in socket.getaddrinfo(HOST, 443, socket.AF_INET, socket.SOCK_STREAM)} == {address}
+    except socket.gaierror:
+        dns_ready = False
+    # An already published record needs no cloud API credential. This also allows
+    # the owner to create this single record in the DNS console; ACME and public
+    # TLS readback still verify the resulting host before reporting success.
+    if not dns_ready:
+        zones = json.loads(run([YC, "dns", "zone", "list", "--format", "json", "--no-user-output"]).stdout)
+        matches = [zone for zone in zones if zone.get("zone") == "kenigevents.ru."]
+        if len(matches) != 1:
+            raise RuntimeError("Canonical DNS zone is ambiguous")
+        zone_id = matches[0]["id"]
+        records = json.loads(run([YC, "dns", "zone", "list-records", "--id", zone_id, "--format", "json", "--no-user-output"]).stdout)
+        records = records.get("record_sets", []) if isinstance(records, dict) else records
+        existing = [record for record in records if record.get("name") == HOST + "."]
+        if existing and not all(record.get("type") == "A" and set(record.get("data", [])) == {address} for record in existing):
+            raise RuntimeError("Conflicting DNS record; no update performed")
+        if not existing:
+            run([YC, "dns", "zone", "add-records", "--id", zone_id, "--record", f"{HOST}. 300 A {address}", "--no-user-output"])
     # Reconcile DNS before ACME, no repeated record creation after a lost response.
     for _ in range(12):
         try:

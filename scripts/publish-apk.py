@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Publish only the verified My MediaBank 0.1.0 APK to its fixed public repository.
 
-Run only after the owner-authorized source commit and Live acceptance:
+Run after the owner-authorized source commit. Runtime limitations are stated
+explicitly in the prerelease notes:
     python3 scripts/publish-apk.py --source-sha <exact-40-character-HEAD>
 
 --dry-run prepares the ignored release files and reads GitHub state, without
@@ -159,6 +160,8 @@ def stage(evidence: dict, source_sha: str, android_tree: str) -> tuple[list[Path
     text = f"""## My MediaBank 0.1.0 — первый тест Миры
 
 Чёрный экран с одной фотографией, просмотр от новых снимков к старым и разговор с Мирой через сервер по WSS. Мира описывает изображение и предлагает оценку открыточности от 1 до 10.
+
+**Статус этой сборки:** APK собран и подписан. Подключение публичного сервера и заключительная проверка Live ещё не завершены; готовность к тесту на телефоне будет подтверждена отдельно.
 
 - Подписанный APK: Android 8.0 и новее.
 - Фотографии пока не удаляются, не архивируются и не публикуются в Telegram.
