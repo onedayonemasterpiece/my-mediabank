@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080808">
+  <meta name="color-scheme" content="dark">
+  <title>Мой медиабанк</title>
+  <link rel="stylesheet" href="/app.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <main class="review" aria-label="Просмотр фотографий">
+    <header class="topbar">
+      <div class="availability" role="status" aria-live="polite">
+        <span id="statusDot" class="status-dot" aria-hidden="true"></span>
+        <span id="statusText">Подключение…</span>
+      </div>
+      <button id="chooseFiles" class="quiet-button" type="button" hidden>Открыть фото</button>
+      <button id="photoAccess" class="quiet-button" type="button" hidden>Доступ к фото</button>
+      <input id="fileInput" type="file" accept="image/*" multiple hidden>
+    </header>
+
+    <section id="photoStage" class="photo-stage" aria-label="Текущая фотография">
+      <img id="photo" alt="" decoding="async" hidden>
+      <div id="emptyState" class="empty-state">
+        <svg viewBox="0 0 48 48" width="42" height="42" fill="none" aria-hidden="true"><rect x="7" y="9" width="34" height="30" rx="4" stroke="currentColor" stroke-width="1.5"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="1.5"/><path d="m8 33 10-9 7 6 6-5 10 10" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        <h1 id="emptyTitle">Фотографии и Мира</h1>
+        <p id="emptyDescription">Открывайте снимки. Мира расскажет, что видит, и оценит их открыточность.</p>
+        <button id="emptyAction" class="primary-button" type="button">Открыть фотографии</button>
+      </div>
+    </section>
+
+    <section class="review-info" aria-label="Оценка фотографии">
+      <div class="photo-meta">
+        <span id="photoPosition">От новых к старым</span>
+        <span id="photoDate"></span>
+      </div>
+      <div id="evaluation" class="evaluation" hidden>
+        <div class="score" aria-label="Открыточность"><span id="scoreValue">—</span><span class="score-out-of">/ 10</span></div>
+        <div class="evaluation-copy">
+          <p id="description" class="description"></p>
+          <p id="reason" class="reason"></p>
+        </div>
+      </div>
+      <p id="reviewHint" class="review-hint" role="status" aria-live="polite">Оценка появится здесь.</p>
+      <div class="controls">
+        <button id="previous" class="navigation-button" type="button" aria-label="Предыдущая фотография" disabled><svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true"><path d="m14 6-6 6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Назад</span></button>
+        <button id="miraToggle" class="mira-button" type="button"><span id="miraIcon" aria-hidden="true">●</span><span id="miraLabel">Подключить Миру</span></button>
+        <button id="next" class="navigation-button" type="button" aria-label="Следующая фотография" disabled><span>Дальше</span><svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true"><path d="m10 6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <button id="retry" class="retry-button" type="button" hidden>Попробовать ещё раз</button>
+    </section>
+  </main>
+
+  <dialog id="loginDialog" aria-labelledby="loginTitle" aria-describedby="loginDescription">
+    <form id="loginForm" class="login-form">
+      <span class="dialog-eyebrow">МОЙ МЕДИАБАНК</span>
+      <h2 id="loginTitle">Подключить Миру</h2>
+      <p id="loginDescription">Введите код доступа к вашему серверу. Он понадобится один раз.</p>
+      <label for="loginCode">Код доступа</label>
+      <input id="loginCode" name="code" type="password" autocomplete="one-time-code" autocapitalize="off" spellcheck="false" maxlength="128" required>
+      <p id="loginError" class="login-error" role="alert"></p>
+      <button id="loginSubmit" class="primary-button" type="submit">Подключить</button>
+      <button id="browseOnly" class="quiet-button" type="button">Пока смотреть фотографии</button>
+    </form>
+  </dialog>
+</body>
+</html>

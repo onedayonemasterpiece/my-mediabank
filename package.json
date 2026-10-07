@@ -1,0 +1,20 @@
+{
+  "name": "my-mediabank",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-web.mjs",
+    "check": "node --check web/app.js && node --check scripts/build-web.mjs"
+  },
+  "dependencies": {
+    "@onedayonemasterpiece/live-interaction": "file:vendor/live-interaction-0.3.27.tgz"
+  },
+  "liveFramework": {
+    "version": "0.3.27",
+    "archive": "vendor/live-interaction-0.3.27.tgz",
+    "sourceRepository": "onedayonemasterpiece/live-interaction",
+    "sourceCommit": "557532aa6277b5fc06424eb171d99e96f1445387"
+  },
+  "engines": {"node": ">=22"}
+}

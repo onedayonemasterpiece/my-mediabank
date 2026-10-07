@@ -1,0 +1,20 @@
+[Unit]
+Description=My MediaBank photo review MVP
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/dev/projects/my-mediabank
+EnvironmentFile=/home/dev/.config/my-mediabank/service.env
+ExecStart=/home/dev/projects/my-mediabank/.venv/bin/uvicorn my_mediabank.app:create_app --factory --host 127.0.0.1 --port 8204 --workers 1 --ws-max-size 2097152 --ws-max-queue 2 --no-access-log
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=15
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+MemoryMax=512M
+
+[Install]
+WantedBy=default.target

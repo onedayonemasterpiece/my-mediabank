@@ -1,0 +1,66 @@
+plugins {
+    id "com.android.application"
+}
+
+def backendUrl = providers.gradleProperty("BACKEND_URL")
+        .orElse(providers.environmentVariable("BACKEND_URL"))
+        .getOrElse("https://my-mediabank.kenigevents.ru/")
+def backendUri = new URI(backendUrl)
+if (backendUri.scheme != "https" || !backendUri.host || backendUri.userInfo != null ||
+        backendUri.query != null || backendUri.fragment != null ||
+        (backendUri.port != -1 && (backendUri.port < 1 || backendUri.port > 65535))) {
+    throw new GradleException("BACKEND_URL must be an HTTPS URL without credentials, query or fragment")
+}
+def versionCodeOverride = providers.gradleProperty("versionCodeOverride").orNull
+def versionNameOverride = providers.gradleProperty("versionNameOverride").orNull
+def releaseSigningNames = ["ANDROID_KEYSTORE_PATH", "ANDROID_KEYSTORE_PASSWORD", "ANDROID_KEY_ALIAS", "ANDROID_KEY_PASSWORD"]
+def hasReleaseSigning = releaseSigningNames.every { System.getenv(it) }
+
+android {
+    namespace "com.kenigevents.mymediabank"
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.kenigevents.mymediabank"
+        minSdk 26
+        targetSdk 35
+        versionCode versionCodeOverride ? Integer.parseInt(versionCodeOverride) : 1
+        versionName versionNameOverride ?: "0.1.0"
+        buildConfigField "String", "BACKEND_URL", groovy.json.JsonOutput.toJson(backendUrl)
+    }
+
+    signingConfigs {
+        release {
+            if (hasReleaseSigning) {
+                storeFile file(System.getenv("ANDROID_KEYSTORE_PATH"))
+                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            versionNameSuffix "-debug"
+        }
+        release {
+            minifyEnabled false
+            if (hasReleaseSigning) signingConfig signingConfigs.release
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation "androidx.webkit:webkit:1.12.1"
+    testImplementation "junit:junit:4.13.2"
+}

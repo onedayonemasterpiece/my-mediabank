@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my-mediabank"
+version = "0.1.0"
+description = "A small Android photo review experiment with Mira Live"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "uvicorn[standard]>=0.34,<1",
+  "Pillow>=11.1,<13",
+  "live-interaction==0.3.27",
+]
+
+[project.optional-dependencies]
+test = ["httpx>=0.28,<1"]
+
+[project.scripts]
+my-mediabank-admin = "my_mediabank.admin:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
