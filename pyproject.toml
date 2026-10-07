@@ -16,6 +16,7 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["httpx>=0.28,<1"]
+ops = ["psycopg[binary]>=3.2,<4"]
 
 [project.scripts]
 my-mediabank-admin = "my_mediabank.admin:main"

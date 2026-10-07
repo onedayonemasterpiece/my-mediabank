@@ -30,6 +30,8 @@ npm run build
 
 Перед Live-сессией отдельный consumer `my-mediabank` должен быть зарегистрирован в существующем контроллере. Секреты остаются в серверном `EnvironmentFile`, не в APK, репозитории или браузере. Обязательные имена параметров: `MY_MEDIABANK_ORIGIN`, `MY_MEDIABANK_STATE_DIR`, `MY_MEDIABANK_STATIC_DIR`, `AI_RESOURCE_CONTROL_URL`, `AI_RESOURCE_CONTROL_SERVICE_KEY`. Рекомендуемый unit в `deploy/` слушает loopback и требует HTTPS/WSS reverse proxy.
 
+Для служебной регистрации consumer через `scripts/prepare-host.py` установите операторский extra: `.venv/bin/pip install -e '.[ops]'`. Он добавляет драйвер PostgreSQL для существующего доверенного контура; приложение не использует PostgreSQL для фотографий.
+
 Локальная команда `.venv/bin/my-mediabank-admin invite` создаёт одноразовый код владельца. Код вводится один раз в приложении; дальше используется собственная HttpOnly/Secure сессия. Публичного метода выдачи кодов нет.
 
 ## Что хранится

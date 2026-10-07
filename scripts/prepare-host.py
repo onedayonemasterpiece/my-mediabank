@@ -74,7 +74,8 @@ def prepare(source_sha):
         old = module._parse_dotenv_aliases(target, set(env))
         if any(old.get(key) != value for key, value in env.items() if key != "MY_MEDIABANK_RELEASE"):
             raise RuntimeError("Existing own runtime configuration differs; review instead of overwriting")
-    with target.open("w", opener=lambda path, flags: os.open(path, flags, 0o600)) as output:
+    descriptor = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_NOFOLLOW, 0o600)
+    with os.fdopen(descriptor, "w") as output:
         for key, value in env.items():
             output.write(f"{key}={json.dumps(value)}\n")
         output.flush()
