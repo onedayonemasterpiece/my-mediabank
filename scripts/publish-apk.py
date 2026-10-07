@@ -141,10 +141,11 @@ def write_once(path: Path, content: bytes) -> None:
 
 
 def stage(evidence: dict, source_sha: str, android_tree: str) -> tuple[list[Path], Path]:
-    if not RELEASE_DIR.resolve().is_relative_to(ROOT):
+    release_directory = RELEASE_DIR / source_sha
+    if not release_directory.resolve().is_relative_to(ROOT):
         raise RuntimeError("Release directory must remain inside this repository's ignored build output")
-    RELEASE_DIR.mkdir(parents=True, exist_ok=True)
-    apk = RELEASE_DIR / APK_NAME
+    release_directory.mkdir(parents=True, exist_ok=True)
+    apk = release_directory / APK_NAME
     write_once(apk, SOURCE_APK.read_bytes())
     public_evidence = {"repository": REPO, "tag": TAG, "source_sha": source_sha, "android_git_tree": android_tree,
         "apk": APK_NAME, "status": "verified", "variant": "release", "bytes": evidence["bytes"],
@@ -152,11 +153,11 @@ def stage(evidence: dict, source_sha: str, android_tree: str) -> tuple[list[Path
         "version_code": 1, "version_name": "0.1.0", "min_sdk": 26, "target_sdk": 35,
         "tests": evidence["tests"], "physical_device_installation": "not_run",
         "verified_at_unix": evidence["verified_at_unix"]}
-    report = RELEASE_DIR / "my-mediabank-0.1.0-verification.json"
+    report = release_directory / "my-mediabank-0.1.0-verification.json"
     write_once(report, (json.dumps(public_evidence, indent=2, sort_keys=True) + "\n").encode())
-    checksums = RELEASE_DIR / "my-mediabank-0.1.0-SHA256SUMS.txt"
+    checksums = release_directory / "my-mediabank-0.1.0-SHA256SUMS.txt"
     write_once(checksums, (f"{APK_SHA256}  {APK_NAME}\n{digest(report)}  {report.name}\n").encode())
-    notes = RELEASE_DIR / "my-mediabank-0.1.0-notes.md"
+    notes = release_directory / "my-mediabank-0.1.0-notes.md"
     text = f"""## My MediaBank 0.1.0 — первый тест Миры
 
 Чёрный экран с одной фотографией, просмотр от новых снимков к старым и разговор с Мирой через сервер по WSS. Мира описывает изображение и предлагает оценку открыточности от 1 до 10.
@@ -183,7 +184,8 @@ class GitHub:
         return invoke([self.executable, *arguments], self.env, label, allow_failure=allow_failure)
 
     def api(self, suffix: str, *, missing_ok=False):
-        response = self.command(["api", f"repos/{REPO}/{suffix}"], "read fixed repository metadata", allow_failure=True)
+        endpoint = f"repos/{REPO}/{suffix}".rstrip("/")
+        response = self.command(["api", endpoint], "read fixed repository metadata", allow_failure=True)
         if response.returncode:
             if missing_ok and "HTTP 404" in response.stderr:
                 return None
