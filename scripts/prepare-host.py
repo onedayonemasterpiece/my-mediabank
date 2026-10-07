@@ -6,16 +6,17 @@ can be created. It neither resets the ledger nor edits another application's key
 """
 import argparse
 import hashlib
-import importlib.util
 import json
 import os
 import subprocess
 import time
+import types
 import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 RESOURCE_ROOT = Path("/home/dev/projects/ai-resource-control")
+RESOURCE_HELPER_COMMIT = "d1af03b174be71b829b518306fd68d4acb8e779c"
 RESOURCE_HELPER_BLOB = "5d21989ad64e616b280ae9e4bb045e16a4d6127c"
 CONFIG = Path("/home/dev/.config/my-mediabank")
 STATE = Path("/home/dev/.local/share/my-mediabank/state")
@@ -33,12 +34,18 @@ def run(args, **kwargs):
 
 def helper():
     path = RESOURCE_ROOT / "tools/apply_production_migrations.py"
-    blob = run(["git", "-C", str(RESOURCE_ROOT), "hash-object", str(path)]).stdout.strip()
+    # Load the reviewed immutable object; parallel migration work in the shared
+    # checkout must not change this app's provisioning/query implementation.
+    source = subprocess.run([
+        "git", "-C", str(RESOURCE_ROOT), "show",
+        f"{RESOURCE_HELPER_COMMIT}:tools/apply_production_migrations.py",
+    ], check=True, timeout=10, capture_output=True).stdout
+    blob = hashlib.sha1(f"blob {len(source)}\0".encode() + source).hexdigest()
     if blob != RESOURCE_HELPER_BLOB:
-        raise RuntimeError("Canonical authority helper changed; review before provisioning")
-    spec = importlib.util.spec_from_file_location("canonical_resource_provisioning", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+        raise RuntimeError("Pinned canonical authority helper did not match its reviewed object")
+    module = types.ModuleType("canonical_resource_provisioning")
+    module.__file__ = str(path)
+    exec(compile(source, str(path), "exec"), module.__dict__)
     return module
 
 
